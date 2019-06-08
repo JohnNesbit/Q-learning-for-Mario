@@ -6,6 +6,14 @@ import tensorflow as tf
 from PIL import Image as PIL
 from collections import deque
 import random
+
+# variables declaring the saves made in the last training sess (if there was one)
+already_ran = False
+# the number after model in the path to the saved trained variables
+train_time_num = 0
+# the number after "Q-learning_model" in the saved variables file
+batch_num = 0
+
 sess = tf.InteractiveSession()
 batch_size = 1
 epochs = 2
@@ -33,7 +41,7 @@ m0, m1, m2, m3, m4, m5, m6, m7, m8, m9 = np.array([]), np.array([]), np.array([]
 var_list = [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9]
 
 for i in range(10):
-    exec('m%d = np.array(PIL.open("m" + str(i) + ".png").convert("L"))' % i)
+    exec('m%d = np.array(PIL.open("pics/m" + str(i) + ".png").convert("L"))' % i)
 
 
 def ivar(shape, var_type):
@@ -128,7 +136,7 @@ def get_reward(current_statel, past_reward):
     thousands_arr = np.array(current_statel.crop((544, 337, 573, 366)).convert("L")) # level box
     # crops: 4-tuple defining the left, upper, right, and lower pixel coordinate.
     win_bonus = 0
-    if current_statel.convert("L") == PIL.open("win.png").convert("L"):
+    if current_statel.convert("L") == PIL.open("pics/win.png").convert("L"):
         win_bonus = 120
     for num in range(10):
         x = eval('m%d' % num)
@@ -150,10 +158,10 @@ def is_game_finished(tstate):
     # returns bool if game over or post-won
     tprep = np.array_str(np.array(tstate.crop((0, 431, 1024, 945)).convert("L")))
     if tprep == \
-            np.array_str(np.array(PIL.open("game_over.png").crop((0, 431, 1024, 945)).convert("L"))):
+            np.array_str(np.array(PIL.open("pics/game_over.png").crop((0, 431, 1024, 945)).convert("L"))):
         return True
     if tprep == \
-            np.array_str(np.array(PIL.open("game_over.png").crop((0, 431, 1024, 945)).convert("L"))):
+            np.array_str(np.array(PIL.open("pics/post-win.png").crop((0, 431, 1024, 945)).convert("L"))):
         return True
     return False
 
@@ -198,7 +206,8 @@ epsilon = 1.0
 sess.run(tf.initialize_all_variables())
 
 saver = tf.train.Saver()
-saver.restore(sess, save_path="model7/Q-learning_model0.ckpt")
+if already_ran:
+    saver.restore(sess, save_path="model" + train_time_num + "/Q-learning_model"+ batch_num +".ckpt")
 
 for n in range(train_time):
     # observe phase
@@ -238,8 +247,7 @@ for n in range(train_time):
                 time.sleep(4)
                 break
 
-    print('game' + str(n) + 'completed')
-    # works to here
+    print('game' + str(n * batch_size) + 'completed')
     y_arr = np.array([])
     x_arr = np.array([])
     a_arr = np.array([])
