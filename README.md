@@ -1,3 +1,5 @@
+# rip this kernel i made it when i was 12 dont take seriously
+
 # Q-learning-for-Mario
 Q-learning Tensorflow 1.13.1 script for GUI connection with Mario
 
